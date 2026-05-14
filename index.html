@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Yash Sahay</title>
+  <meta name="description" content="Yash Sahay — Director of Engineering at Meta Superintelligence Labs.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================================
+       DESIGN TOKENS — Direction B: Builder's Study
+       ============================================================ */
+    :root {
+      --bg:           #ECEAE6;
+      --surface:      #F5F2ED;
+      --text:         #1C1A17;
+      --accent-deco:  #C4783A;  /* decorative only — NEVER on text */
+      --accent-text:  #7A4018;  /* all colored text, labels, metadata */
+      --muted:        #8C8680;
+      --mid-gray:     #4A4540;
+      --border:       #D5D0C8;
+      --max-w:        680px;
+      --curve:        cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      background: var(--bg);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    /* ============================================================
+       NAVIGATION
+       ============================================================ */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(24px, 5vw, 48px);
+      height: 56px;
+      background: var(--bg);
+      transition: border-bottom 200ms var(--curve);
+    }
+
+    .nav.scrolled {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-wordmark {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: 20px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--text);
+      text-decoration: none;
+      padding: 15px 0;  /* 44px touch target via line-height */
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      position: relative;
+      transition: color 200ms var(--curve);
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--text);
+      opacity: 0;
+      transition: opacity 200ms var(--curve);
+    }
+
+    .nav-links a:hover {
+      color: var(--accent-text);
+    }
+
+    .nav-links a:hover::after {
+      opacity: 0.4;
+    }
+
+    .nav-links a.active {
+      color: var(--accent-text);
+    }
+
+    /* Mobile hamburger */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 12px;
+      margin-right: -12px;
+      min-width: 44px;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+    }
+
+    .nav-hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text);
+      transition: opacity 150ms var(--curve);
+    }
+
+    /* Mobile menu overlay */
+    .nav-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 200;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      opacity: 0;
+      transition: opacity 150ms var(--curve);
+    }
+
+    .nav-overlay.open {
+      opacity: 1;
+    }
+
+    .nav-overlay a {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-size: 28px;
+      font-weight: 300;
+      color: var(--text);
+      text-decoration: none;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-overlay-close {
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 12px;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+    }
+
+    /* ============================================================
+       DUST MOTES — CSS only, hero section only
+       ============================================================ */
+    @media (prefers-reduced-motion: no-preference) {
+      .dust-mote {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: var(--accent-deco);
+        opacity: 0.04;
+        box-shadow: 0 0 6px 2px rgba(196, 120, 58, 0.06);
+        pointer-events: none;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+      }
+
+      .dust-mote:nth-child(1)  { left: 8%;  top: 15%; animation: drift1 28s 0s   infinite; }
+      .dust-mote:nth-child(2)  { left: 22%; top: 65%; animation: drift2 33s 2s   infinite; }
+      .dust-mote:nth-child(3)  { left: 45%; top: 30%; animation: drift1 25s 4s   infinite; }
+      .dust-mote:nth-child(4)  { left: 72%; top: 78%; animation: drift3 38s 1s   infinite; }
+      .dust-mote:nth-child(5)  { left: 85%; top: 22%; animation: drift2 22s 6s   infinite; }
+      .dust-mote:nth-child(6)  { left: 15%; top: 88%; animation: drift1 40s 3s   infinite; }
+      .dust-mote:nth-child(7)  { left: 60%; top: 55%; animation: drift3 30s 5s   infinite; }
+      .dust-mote:nth-child(8)  { left: 35%; top: 10%; animation: drift2 35s 7s   infinite; }
+      .dust-mote:nth-child(9)  { left: 90%; top: 50%; animation: drift1 27s 2s   infinite; }
+      .dust-mote:nth-child(10) { left: 5%;  top: 40%; animation: drift3 32s 8s   infinite; }
+      .dust-mote:nth-child(11) { left: 55%; top: 85%; animation: drift2 24s 4s   infinite; }
+      .dust-mote:nth-child(12) { left: 78%; top: 12%; animation: drift1 36s 1.5s infinite; }
+      .dust-mote:nth-child(13) { left: 30%; top: 48%; animation: drift3 29s 9s   infinite; }
+      .dust-mote:nth-child(14) { left: 68%; top: 35%; animation: drift2 31s 6.5s infinite; }
+      .dust-mote:nth-child(15) { left: 48%; top: 72%; animation: drift1 26s 3.5s infinite; }
+
+      @keyframes drift1 {
+        0%   { transform: translate(0, 0); }
+        25%  { transform: translate(12px, -18px); }
+        50%  { transform: translate(-8px, -32px); }
+        75%  { transform: translate(16px, -22px); }
+        100% { transform: translate(0, 0); }
+      }
+
+      @keyframes drift2 {
+        0%   { transform: translate(0, 0); }
+        33%  { transform: translate(-14px, -24px); }
+        66%  { transform: translate(10px, -40px); }
+        100% { transform: translate(0, 0); }
+      }
+
+      @keyframes drift3 {
+        0%   { transform: translate(0, 0); }
+        20%  { transform: translate(18px, -12px); }
+        40%  { transform: translate(8px, -28px); }
+        60%  { transform: translate(-12px, -18px); }
+        80%  { transform: translate(6px, -38px); }
+        100% { transform: translate(0, 0); }
+      }
+    }
+
+    /* Kill motes on prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      .dust-mote { display: none; }
+    }
+
+    /* ============================================================
+       HERO SECTION
+       ============================================================ */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      padding-top: 56px; /* nav height */
+    }
+
+    .hero-inner {
+      width: 100%;
+      max-width: calc(var(--max-w) + 320px + 80px);
+      margin: 0 auto;
+      padding: clamp(48px, 8vw, 96px) clamp(24px, 5vw, 48px);
+      display: grid;
+      grid-template-columns: var(--max-w) 1fr;
+      gap: clamp(48px, 5vw, 80px);
+      align-items: center;
+    }
+
+    .hero-text {
+      min-width: 0;
+    }
+
+    .hero-name {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(44px, 8vw, 68px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .hero-role {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      color: var(--accent-text);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .hero-tagline {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 22px;
+      line-height: 1.4;
+      color: var(--text);
+    }
+
+    .hero-portrait {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+    }
+
+    .hero-portrait img {
+      width: 100%;
+      max-width: 300px;
+      aspect-ratio: 3 / 4;
+      object-fit: cover;
+      object-position: center top;
+    }
+
+    /* ============================================================
+       SECTION SHARED STYLES
+       ============================================================ */
+    .section {
+      padding: clamp(72px, 10vw, 120px) clamp(24px, 5vw, 48px);
+    }
+
+    .section-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: var(--accent-text);
+      margin-bottom: 80px;
+      display: block;
+    }
+
+    /* ============================================================
+       WRITING SECTION
+       ============================================================ */
+    .writing-list {
+      list-style: none;
+    }
+
+    .writing-item {
+      padding: 24px 0;
+    }
+
+    .writing-item + .writing-item {
+      margin-top: 0;
+      padding-top: 24px;
+    }
+
+    /* 48px gap between entries = 24px bottom of one + 24px top of next = 48px */
+    .writing-item:not(:last-child) {
+      padding-bottom: 24px;
+    }
+
+    .writing-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 21px;
+      line-height: 1.3;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      min-height: 48px;
+      transition: transform 200ms var(--curve);
+      cursor: pointer;
+    }
+
+    .writing-item:hover .writing-title {
+      transform: translateX(6px);
+    }
+
+    .writing-meta {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--accent-text);
+      letter-spacing: 0.02em;
+      margin-top: 6px;
+      display: block;
+    }
+
+    /* ============================================================
+       WORK SECTION
+       ============================================================ */
+    .work-ledger {
+      list-style: none;
+    }
+
+    .work-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 32px;
+      padding: 32px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .work-row:first-child {
+      border-top: 1px solid var(--border);
+    }
+
+    .work-left {
+      min-width: 0;
+    }
+
+    .work-org {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 20px;
+      color: var(--text);
+      line-height: 1.2;
+      display: block;
+    }
+
+    .work-years {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      font-size: 13px;
+      color: var(--accent-text);
+      margin-top: 6px;
+      display: block;
+    }
+
+    .work-right {
+      min-width: 0;
+    }
+
+    .work-role {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--text);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .work-impact {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      color: var(--mid-gray);
+      line-height: 1.5;
+      display: block;
+    }
+
+    /* ============================================================
+       ABOUT SECTION
+       ============================================================ */
+    .about-section {
+      background: var(--surface);
+    }
+
+    .about-prose {
+      max-width: 65ch;
+      margin: 0 auto;
+    }
+
+    .about-prose p {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .about-prose p + p {
+      margin-top: 28px;
+    }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px clamp(24px, 5vw, 48px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    footer span {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ============================================================
+       RESPONSIVE — TABLET
+       ============================================================ */
+    @media (max-width: 900px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+        max-width: var(--max-w);
+        gap: 48px;
+      }
+
+      .hero-portrait {
+        justify-content: center;
+        order: -1;
+      }
+
+      .hero-portrait img {
+        max-width: 220px;
+        /* portrait faces left — on mobile, flip so gaze doesn't exit canvas */
+        transform: scaleX(-1);
+      }
+
+      .hero-name {
+        font-size: clamp(36px, 8vw, 52px);
+      }
+    }
+
+    /* ============================================================
+       RESPONSIVE — MOBILE
+       ============================================================ */
+    @media (max-width: 600px) {
+      .nav-links {
+        display: none;
+      }
+
+      .nav-hamburger {
+        display: flex;
+      }
+
+      .nav-overlay {
+        display: flex;
+      }
+
+      .hero-inner {
+        padding-top: 40px;
+        padding-bottom: 64px;
+      }
+
+      .hero-name {
+        font-size: 44px;
+        line-height: 1.1;
+        letter-spacing: -0.01em;
+      }
+
+      .hero-tagline {
+        font-size: 18px;
+      }
+
+      .hero-portrait img {
+        max-width: 200px;
+      }
+
+      .section-label {
+        margin-bottom: 48px;
+      }
+
+      /* Work ledger collapses to single-column on mobile */
+      .work-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .writing-item {
+        padding: 18px 0;
+      }
+
+      .writing-meta {
+        font-size: 14px;
+      }
+
+      .section {
+        padding: clamp(48px, 8vw, 72px) 24px;
+      }
+    }
+
+    /* ============================================================
+       FOCUS INDICATORS (accessibility)
+       ============================================================ */
+    :focus-visible {
+      outline: 2px solid var(--accent-text);
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+
+    /* Skip to content */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 24px;
+      background: var(--accent-text);
+      color: white;
+      padding: 8px 16px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 4px;
+      z-index: 999;
+      transition: top 200ms;
+    }
+
+    .skip-link:focus {
+      top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Skip to content -->
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <!-- ============================================================
+       NAVIGATION
+       ============================================================ -->
+  <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+    <a href="/" class="nav-wordmark" aria-label="Yash Sahay home">YS</a>
+    <ul class="nav-links" role="list">
+      <li><a href="#work">Work</a></li>
+      <li><a href="#writing">Writing</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+    <button class="nav-hamburger" aria-label="Open menu" aria-expanded="false" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile overlay menu -->
+  <div class="nav-overlay" id="navOverlay" role="dialog" aria-modal="true" aria-label="Navigation menu">
+    <button class="nav-overlay-close" id="navOverlayClose" aria-label="Close menu">✕</button>
+    <a href="#work"    onclick="closeMenu()">Work</a>
+    <a href="#writing" onclick="closeMenu()">Writing</a>
+    <a href="#about"   onclick="closeMenu()">About</a>
+  </div>
+
+  <main id="main">
+
+    <!-- ============================================================
+         HERO
+         ============================================================ -->
+    <section class="hero" id="hero" aria-label="Introduction">
+      <!-- Dust motes — CSS only, aria-hidden -->
+      <div aria-hidden="true">
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+        <div class="dust-mote"></div>
+      </div>
+
+      <div class="hero-inner">
+        <div class="hero-text">
+          <h1 class="hero-name">Yash Sahay</h1>
+          <p class="hero-role">Director of Engineering · Meta Superintelligence Labs</p>
+          <p class="hero-tagline">Right from wrong, and everything in the middle.</p>
+        </div>
+        <div class="hero-portrait">
+          <img
+            src="https://app.hisolo.ai/media/KnWgDsvfV3xD6TaO"
+            alt="Illustrated portrait of Yash Sahay"
+            width="300"
+            height="400"
+            loading="eager"
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         WRITING SECTION
+         ============================================================ -->
+    <section class="section" id="writing" aria-labelledby="writing-label">
+      <div class="section-inner">
+        <span class="section-label" id="writing-label">Writing</span>
+        <ul class="writing-list" role="list">
+          <li class="writing-item">
+            <a href="#" class="writing-title" aria-label="Read: The Last Mile of AI Research">
+              The Last Mile of AI Research
+            </a>
+            <span class="writing-meta">Jan 2025 · 8 min read</span>
+          </li>
+          <li class="writing-item">
+            <a href="#" class="writing-title" aria-label="Read: What 40,000 Creators Taught Me About Scale">
+              What 40,000 Creators Taught Me About Scale
+            </a>
+            <span class="writing-meta">Oct 2024 · 12 min read</span>
+          </li>
+          <li class="writing-item">
+            <a href="#" class="writing-title" aria-label="Read: Right from Wrong: On Building in Ambiguous Domains">
+              Right from Wrong: On Building in Ambiguous Domains
+            </a>
+            <span class="writing-meta">Jul 2024 · 6 min read</span>
+          </li>
+          <li class="writing-item">
+            <a href="#" class="writing-title" aria-label="Read: Why AR Went Mainstream Before We Were Ready">
+              Why AR Went Mainstream Before We Were Ready
+            </a>
+            <span class="writing-meta">Mar 2024 · 9 min read</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         WORK SECTION
+         ============================================================ -->
+    <section class="section" id="work" aria-labelledby="work-label">
+      <div class="section-inner">
+        <span class="section-label" id="work-label">Work</span>
+        <ul class="work-ledger" role="list">
+
+          <li class="work-row">
+            <div class="work-left">
+              <span class="work-org">Meta</span>
+              <span class="work-years">2015–Present</span>
+            </div>
+            <div class="work-right">
+              <span class="work-role">Director of Engineering, Superintelligence Labs</span>
+              <span class="work-impact">Led engineering across AI research-to-production pipeline reaching over a billion people.</span>
+            </div>
+          </li>
+
+          <li class="work-row">
+            <div class="work-left">
+              <span class="work-org">Spark AR</span>
+              <span class="work-years">2018–2022</span>
+            </div>
+            <div class="work-right">
+              <span class="work-role">Tech Lead</span>
+              <span class="work-impact">Grew the creator platform to 40K+ developers building AR experiences on Instagram and Facebook.</span>
+            </div>
+          </li>
+
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         ABOUT SECTION
+         ============================================================ -->
+    <section class="section about-section" id="about" aria-labelledby="about-label">
+      <div class="section-inner">
+        <span class="section-label" id="about-label">About</span>
+        <div class="about-prose">
+          <p>Yash Sahay builds AI systems for the real world — not as a side effect of research, but as the point. Over nine years at Meta, he has translated foundational AI work into products that reach more than a billion people.</p>
+          <p>He previously led engineering for Spark AR (40,000+ creators) and now the Superintelligence Labs engineering team. Before all of it: two startups, both acquired.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer role="contentinfo">
+    <span>Yash Sahay</span>
+    <span>2025</span>
+  </footer>
+
+  <!-- ============================================================
+       JAVASCRIPT — nav scroll + mobile menu
+       ============================================================ -->
+  <script>
+    // Error capture
+    window.__errors = [];
+    window.onerror = function(msg, src, line, col) {
+      window.__errors.push({ msg, src, line, col });
+    };
+    window.onunhandledrejection = function(e) {
+      window.__errors.push({ msg: String(e.reason) });
+    };
+
+    // Nav scroll border
+    const nav = document.getElementById('nav');
+    const SCROLL_THRESHOLD = 80;
+
+    function updateNav() {
+      if (window.scrollY > SCROLL_THRESHOLD) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    }
+
+    window.addEventListener('scroll', updateNav, { passive: true });
+    updateNav();
+
+    // Active nav link based on scroll position
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    function updateActiveLink() {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 80;
+        if (window.scrollY >= sectionTop) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', updateActiveLink, { passive: true });
+
+    // Mobile menu
+    const hamburger = document.getElementById('hamburger');
+    const overlay = document.getElementById('navOverlay');
+    const overlayClose = document.getElementById('navOverlayClose');
+
+    function openMenu() {
+      overlay.style.display = 'flex';
+      requestAnimationFrame(() => overlay.classList.add('open'));
+      hamburger.setAttribute('aria-expanded', 'true');
+      overlayClose.focus();
+    }
+
+    function closeMenu() {
+      overlay.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      setTimeout(() => { overlay.style.display = 'none'; }, 150);
+    }
+
+    hamburger.addEventListener('click', openMenu);
+    overlayClose.addEventListener('click', closeMenu);
+
+    // Close on tap outside links
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closeMenu();
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) closeMenu();
+    });
+
+    console.log('[yashsahay] Site loaded. Errors:', window.__errors.length);
+  </script>
+
+</body>
+</html>
